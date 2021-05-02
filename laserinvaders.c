@@ -1,21 +1,17 @@
-//#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <conio.h>
 #include <peekpoke.h>
-//#include <c64.h>
-//#include <cbm.h>
 
 #define SPRITE_SIZE				64U
 
-#define PLAYER_SPRITE           0U /*1*/
-#define SHOT_SPRITE		        1U /*2*/
-#define DEATH_SPRITE            2U /*4*/
-#define ENEMY1_SPRITE           3U /*8*/
-#define ENEMY2_SPRITE           4U /*16*/
-#define ENEMY3_SPRITE           5U /*32*/
-#define ENEMY4_SPRITE           6U /*64*/
-//#define ENEMY5_SPRITE           7 /*128*/
+#define PLAYER_SPRITE           0U
+#define SHOT_SPRITE		1U
+#define DEATH_SPRITE            2U
+#define ENEMY1_SPRITE           3U
+#define ENEMY2_SPRITE           4U
+#define ENEMY3_SPRITE           5U
+#define ENEMY4_SPRITE           6U
 
 #define MAX_DEATH_FRAMES        18U
 
@@ -47,12 +43,6 @@
 #define CLR_LIGHT_BLUE        	14U
 #define CLR_LIGHT_GRAY        	15U
 
-/*
-#define SPRITE_BANK_PLAYER_NORM1       	    240U
-#define SPRITE_BANK_PLAYER_NORM2       	    241U
-#define SPRITE_BANK_PLAYER_NORM3       	    242U
-#define SPRITE_BANK_PLAYER_NORM4      	    243U
-*/
 #define SPRITE_BANK_PLAYER_NORM       	    243U
 #define SPRITE_BANK_SHOT         	        244U
 #define SPRITE_BANK_ENEMY1					245U
@@ -410,8 +400,6 @@ const unsigned char enemy_virus8[] = {
 	0x40,0x1A,0xAA,0xA8,0x00,0xAE,0x64,0x01,0xAE,0x99,0x0A,0x6A,0x04,0x04,0xA1,0x00,
 	0x00,0x50,0x80,0x02,0x20,0x80,0x02,0x10,0x80,0x00,0x20,0xC0,0x00,0x00,0x00,0x82};
 	
-//unsigned int v = 0xD000;	 // START OF DISPLAY CHIP
-
 static void LoadSpriteFrame(const unsigned char *sprite_array, unsigned char bank_number)
 {
 	memcpy((void*) (SPRITE_SIZE * bank_number), sprite_array, SPRITE_SIZE);
@@ -433,122 +421,6 @@ static unsigned char RandomBrightColor()
 	}
 	return 1;
 }
-
-/*
-static unsigned char RandomStarColor()
-{
-	switch (rand_range(0,7))
-	{
-		case 0 : return CLR_WHITE;
-				 break;
-		case 1 : return CLR_LIGHT_BLUE;
-				 break;
-		case 2 : return CLR_WHITE;
-				 break;
-		case 3 : return CLR_YELLOW;
-				 break;
-		case 4 : return CLR_ORANGE;
-				 break;
-		case 5 : return CLR_PINK;
-				 break;
-		case 6 : return CLR_WHITE;
-				 break;
-		case 7 : return CLR_RED;
-				 break;
-		default : return CLR_WHITE;
-	}
-	return CLR_WHITE;
-}
-*/
-
-//static void AnimatePlayer()//(unsigned char Animation)
-//{
-	/*
-	player.Current_Animation = Animation; //SET CURRENT ANIMATION 
-
-	if (Animation != player.Current_Animation)
-	{
-		player.Current_Animation = Animation; //SET CURRENT ANIMATION 
-		SetSpriteFrame(PLAYER_SPRITE,SPRITE_BANK_PLAYER_NORM1);
-	}
-	*/
-
-	/*
-	if (GetSpriteColor(PLAYER_SPRITE) == CLR_BLACK)
-	{
-		SetSpriteFrame(PLAYER_SPRITE, SPRITE_BANK_PLAYER_NORM);
-		player.Current_Animation = Animation; //SET CURRENT ANIMATION 
-		SetSpriteColor(PLAYER_SPRITE, CLR_WHITE);
-	}
-	*/
-	
-	
-	/*
-	if (frame_count % player.Frame_Mod == 0U)
-		switch (GetSpriteFrame(PLAYER_SPRITE))
-		{
-			case SPRITE_BANK_PLAYER_NORM1 : SetSpriteColor(PLAYER_SPRITE, CLR_PINK); SetSpriteFrame(PLAYER_SPRITE, SPRITE_BANK_PLAYER_NORM2);
-				break;
-			case SPRITE_BANK_PLAYER_NORM2 : SetSpriteColor(PLAYER_SPRITE, CLR_YELLOW); SetSpriteFrame(PLAYER_SPRITE, SPRITE_BANK_PLAYER_NORM3);
-				break;
-			case SPRITE_BANK_PLAYER_NORM3 : SetSpriteColor(PLAYER_SPRITE, CLR_WHITE); SetSpriteFrame(PLAYER_SPRITE, SPRITE_BANK_PLAYER_NORM4);
-				break;
-			case SPRITE_BANK_PLAYER_NORM4 : SetSpriteColor(PLAYER_SPRITE, CLR_RED); SetSpriteFrame(PLAYER_SPRITE, SPRITE_BANK_PLAYER_NORM1);
-				break;
-			default : SetSpriteFrame(PLAYER_SPRITE,SPRITE_BANK_PLAYER_NORM);
-		}	
-	*/	
-	//if (frame_count % player.Frame_Mod == 0U)
-	//if (frame_count % 3 == 0)
-	//	SetSpriteColor(PLAYER_SPRITE, RandomBrightColor());
-	
-	//SetSpriteColor(PLAYER_SPRITE, RandomBrightColor());
-	
-	/*
-	switch (rand_range(1U,4U))
-		{
-			case 1 : SetSpriteColor(PLAYER_SPRITE, CLR_YELLOW);
-				break;
-			case 2 : SetSpriteColor(PLAYER_SPRITE, CLR_PINK); 
-				break;
-			case 3 : SetSpriteColor(PLAYER_SPRITE, CLR_CYAN); 
-				break;
-			case 4 : SetSpriteColor(PLAYER_SPRITE, CLR_WHITE); 
-				break;
-			default : SetSpriteColor(PLAYER_SPRITE, CLR_WHITE); 
-		}	
-	*/
-	
-	/*
-	//Bounce
-	if (frame_count % 5 == 0)
-		switch (GetSpriteFrame(PLAYER_SPRITE))
-		{
-			case SPRITE_BANK_PLAYER_NORM1 : player.Animate_Direction = 1; SetSpriteFrame(PLAYER_SPRITE, SPRITE_BANK_PLAYER_NORM2);
-				break;
-			case SPRITE_BANK_PLAYER_NORM2 : SetSpriteFrame(PLAYER_SPRITE,SPRITE_BANK_PLAYER_NORM2 + player.Animate_Direction);
-				break;
-			case SPRITE_BANK_PLAYER_NORM3 : SetSpriteFrame(PLAYER_SPRITE,SPRITE_BANK_PLAYER_NORM3 + player.Animate_Direction);
-				break;
-			case SPRITE_BANK_PLAYER_NORM4 : player.Animate_Direction = -1; SetSpriteFrame(PLAYER_SPRITE,SPRITE_BANK_PLAYER_NORM3);
-				break;
-			default : SetSpriteFrame(PLAYER_SPRITE,SPRITE_BANK_PLAYER_NORM1);
-		}	
-	*/
-		
-//}
-
-
-/*
-void AnimateShot(unsigned char Animation)
-{
-	if (Animation != shot.Current_Animation)
-	{
-		shot.Current_Animation = Animation; //SET CURRENT ANIMATION 
-		SetSpriteFrame(SHOT_SPRITE, SPRITE_BANK_SHOT);
-	}
-}
-*/
 
 void LoadEnemySpriteBanks(unsigned char Animation)
 {
@@ -756,40 +628,6 @@ void MoveEnemy()
 	
 	AnimateEnemy();
 
-/*	
-	if (frame_count % 20 == 0)
-	{
-
-		if (rand_range(0,1) == 1)
-			sign = -1;
-		else
-			sign = 1;
-		
-		enemy->yvel += sign;
-		
-		if (enemy->yvel < -3)
-			enemy->yvel = -3;
-		else if (enemy->yvel > 3)
-			enemy->yvel = 3;
-	}
-
-	if (frame_count % 15 == 0)
-	{
-
-		if (rand_range(0,2) == 1)
-			sign = 1;
-		else
-			sign = -1;
-		
-		enemy->xvel += sign;
-		
-		if (enemy->xvel < -3)
-			enemy->xvel = -3;
-		else if (enemy->xvel > 1)
-			enemy->xvel = 1;
-	}
-*/
-	
 	enemy->x += enemy->xvel; // x Speed
 	enemy->y += enemy->yvel;
 	
@@ -942,13 +780,6 @@ static void KillPlayer()
 							CONST_POKE(0xD406+7UL, 4U); //SUSTAIN/RELEASE
 							CONST_POKE(0xD404+7UL, 129U); //WAVEFORM: Triangle=17 Sawtooth=33 Pulse=65 Noise=129 
 							
-							/*
-							POKE(0xD401+7UL, 7U); //FREQ
-							POKE(0xD405+7UL, 10U); //ATTACK/DECAY
-							POKE(0xD406+7UL, 4U); //SUSTAIN/RELEASE
-							POKE(0xD404+7UL, 129U); //WAVEFORM: Triangle=17 Sawtooth=33 Pulse=65 Noise=129 
-							*/
-
 							ClearAllSpriteCollisions();
 							
 							lives -= 1;
@@ -1004,25 +835,6 @@ static void SpawnPlayer()
 	EnableSprite(PLAYER_SPRITE);
 	ClearAllEnemies();
 }
-
-/*
-static void Generate_Platform(int Height)
-{
-	int Start;
-	int Slot;
-	int i;
-	Slot = rand_range(2, 31);
-	Start = Height * 40;
-	for (i = 0; i < 40; i++)
-	{
-		if (i <= Slot || i > Slot + 7)
-		{
-			POKE(1024+Start+i,120);//230
-			POKE(55296+Start+i,CLR_CYAN);
-		}
-	}
-}
-*/
 
 static void Generate_Stars()
 {
@@ -1168,12 +980,6 @@ static void SetEnemyColors(unsigned char animation)
 		enemy3.Current_Animation = animation;
 		enemy4.Current_Animation = animation;
 	}
-		/*
-		SetSpriteColor(ENEMY1_SPRITE, CLR_VIOLET);
-		SetSpriteColor(ENEMY2_SPRITE, CLR_RED);
-		SetSpriteColor(ENEMY3_SPRITE, CLR_BLUE);
-		SetSpriteColor(ENEMY4_SPRITE, CLR_ORANGE);
-		*/
 		
 	c = rand_range(2,4);
 	SetSpriteColor(ENEMY1_SPRITE, c == 3 ? 2 : c);
@@ -1186,53 +992,9 @@ static void SetEnemyColors(unsigned char animation)
 	c = rand_range(11,14);
 	SetSpriteColor(ENEMY4_SPRITE, c == 12 || c == 13 ? 11U : c);
 
-		/*
-		switch (animation)
-		{
-			// case ENEMY_ANIM_POTATO : 
-				// SetSpriteColor(ENEMY1_SPRITE, CLR_BROWN); //enemy
-				// SetSpriteColor(ENEMY2_SPRITE, CLR_DARK_GRAY); //enemy
-				// SetSpriteColor(ENEMY3_SPRITE, CLR_ORANGE); //enemy
-				// SetSpriteColor(ENEMY4_SPRITE, CLR_RED); //enemy
-				// break;
-			case ENEMY_ANIM_VIRUS : 
-				SetSpriteColor(ENEMY1_SPRITE, CLR_VIOLET); //enemy
-				SetSpriteColor(ENEMY2_SPRITE, CLR_RED); //enemy
-				SetSpriteColor(ENEMY3_SPRITE, CLR_BLUE); //enemy
-				SetSpriteColor(ENEMY4_SPRITE, CLR_ORANGE); //enemy
-				break;
-			default : ; //ENEMY_ANIM_SPINNER, ENEMY_ANIM_EGG
-				SetSpriteColor(ENEMY1_SPRITE, CLR_VIOLET); //enemy
-				SetSpriteColor(ENEMY2_SPRITE, CLR_RED); //enemy
-				SetSpriteColor(ENEMY3_SPRITE, CLR_BLUE); //enemy
-				SetSpriteColor(ENEMY4_SPRITE, CLR_WHITE); //enemy
-				break;
-		}
-		*/
 
 }
 
-/*
-static unsigned char rand_left_pos()
-{
-	unsigned char rb = (unsigned char)rand();
-	
-	__asm__ ("lda #%b", rb); //put random byte into the accumulator 
-	__asm__ ("and #%b", 0b11100000);  //use bit mask to limit max to 31
-	__asm__ ("sta %w", 0xC100);       //put the value at 0xC100
-	
-	if (PEEK(0xC100) > 23U) //value at 0xC100 is greater than 23
-	{
-		__asm__ ("lda #%b", 0xC100);     //put value at 0xC100 into the accumulator
-		__asm__ ("and #%b", 0b11110000); //use bit mask to limit max to 15
-		__asm__ ("sta %w", 0xC100);      //put the value back at 0xC100
-	}
-
-	return PEEK(0xC100);
-}
-*/
-
-//int main (void)
 void main (void)
 {
 	unsigned char i;
@@ -1246,20 +1008,6 @@ void main (void)
 	memset((void *)0xD400, 0, 24); //clear SID
 	CONST_POKE(0xD418, 15); //VOLUME - max is 15
 	
-	
-	//unsigned char xScroll = 0x07;
-	//unsigned char last_star;
-	
-	//unsigned char scroll_counter = 0;
-	
-	//POKE(0xDD00,0b00000011);
-	/*
-	lda $DD00
-	and #%11111100
-	ora #%000000xx ;<- your desired VIC bank value, see above
-	sta $DD00
-	*/
-
 	revive = 0;
 
 	enemy_sprite_number = ENEMY1_SPRITE;
@@ -1270,7 +1018,6 @@ void main (void)
 	CONST_POKE(0xD020,CLR_DARK_GRAY); //screen boarder color
 	CONST_POKE(0xD021,CLR_BLACK); //screen color
 
-	//POKE(56322,224); //disable keyboard
 	frame_count = 1;
 
 	kb_was_hit = 0;
@@ -1283,22 +1030,12 @@ void main (void)
 	SetSpriteColor(SHOT_SPRITE, CLR_WHITE);  //player shot
 	SetSpriteColor(DEATH_SPRITE, CLR_ORANGE); //death
 	
-	/*
-	SetSpriteColor(ENEMY1_SPRITE, CLR_VIOLET); //enemy
-	SetSpriteColor(ENEMY2_SPRITE, CLR_RED); //enemy
-	SetSpriteColor(ENEMY3_SPRITE, CLR_BLUE); //enemy
-	SetSpriteColor(ENEMY4_SPRITE, CLR_WHITE); //enemy
-	*/
 	SetEnemyColors(next_enemy_anim);
 	
 	SetSpriteMultiColor1(CLR_CYAN);
 	SetSpriteMultiColor2(CLR_GREEN);
 	
 	LoadSpriteFrame(player_norm, SPRITE_BANK_PLAYER_NORM);
-	//LoadSpriteFrame(player_norm1, SPRITE_BANK_PLAYER_NORM1);
-	//LoadSpriteFrame(player_norm2, SPRITE_BANK_PLAYER_NORM2);
-	//LoadSpriteFrame(player_norm3, SPRITE_BANK_PLAYER_NORM3);
-	//LoadSpriteFrame(player_norm4, SPRITE_BANK_PLAYER_NORM4);
 	LoadSpriteFrame(player_shot, SPRITE_BANK_SHOT);
 	SetSpriteFrame(SHOT_SPRITE, SPRITE_BANK_SHOT); //no animate shot function
 
@@ -1312,7 +1049,6 @@ void main (void)
 
 	ClearAllText(CLR_CYAN);
 	
-	//Generate_Stars();
 	Init_Animated_Stars();
 	
 	ClearTopLine(CLR_PINK);
@@ -1365,29 +1101,12 @@ void main (void)
 			next_wave_delay -= 1;
 		//End ---- Handle next wave -------------------------------------------------------------------
 
-		
-		// debug(20, SpriteCollision(2));
-		
-		//++frame_count;
-		//frame_count = frame_count + 1;
-		
-		//ShowInt(frame_count, 5, 1);
-		/*
-		POKE(54270,scroll);
-		if (scroll < 8)
-			++scroll;
-		else
-			scroll = 0;
-		*/
-		
-		//SpriteCollision(2); //clear collisions
 		MovePlayer();
 		MoveShot();
 		
 		//play laser sound
 		if (laser_freq > 0)
 		{
-			//memset((void *)0xD400, 0, 24);
 			memset((void *)0xD400, 0, 7); // clear voice 1 data
 			POKE(0xD401, laser_freq); //FREQ
 			CONST_POKE(0xD405, 4U); //ATTACK/DECAY
@@ -1462,115 +1181,8 @@ void main (void)
 		AnimateStar(star4, stardead4, starcol4);
 		AnimateStar(star5, stardead5, starcol5);
 
-
-		/*
-		//-----------------------------------------------------------------
-		if (stardead1 == 0)
-		{
-			POKE(star1,32U);
-			if (starcol1 > 39)
-			{
-				star1 = 0x0400 + (rand_range(1U,23U) * 40U) + 40U;
-				stardead1 = rand_range(1U,10U);
-				starcol1 = 39;
-			}
-			else
-			{
-				star1 -= 1;
-				starcol1 -=1;
-				POKE(star1,99U);
-			}
-		}
-		else
-			stardead1 -= 1;
-
-		//-----------------------------------------------------------------
-		if (stardead2 == 0)
-		{
-			POKE(star2,32U);
-			if (starcol2 > 39)
-			{
-				star2 = 0x0400 + (rand_range(1U,23U) * 40U) + 40U;
-				stardead2 = rand_range(1U,10U);
-				starcol2 = 39;
-			}
-			else
-			{
-				star2 -= 1;
-				starcol2 -=1;
-				POKE(star2,99U);
-			}
-		}
-		else
-			stardead2 -= 1;
-
-
-		//-----------------------------------------------------------------
-		if (stardead3 == 0)
-		{
-			POKE(star3,32U);
-			if (starcol3 > 39)
-			{
-				star3 = 0x0400 + (rand_range(1U,23U) * 40U) + 39U;
-				stardead3 = rand_range(1U,10U);
-				starcol3 = 39;
-			}
-			else
-			{
-				star3 -= 1;
-				starcol3 -=1;
-				POKE(star3,99U);
-			}
-		}
-		else
-			stardead3 -= 1;
-		
-		//-----------------------------------------------------------------
-		if (stardead4 == 0)
-		{
-			POKE(star4,32U);
-			if (starcol4 > 39)
-			{
-				star4 = 0x0400 + (rand_range(1U,23U) * 40U) + 39U;
-				stardead4 = rand_range(1U,5U);
-				starcol4 = 39;
-			}
-			else
-			{
-				star4 -= 1;
-				starcol4 -=1;
-				POKE(star4,99U);
-			}
-		}
-		else
-			stardead4 -= 1;
-
-		//-----------------------------------------------------------------
-		if (stardead5 == 0)
-		{
-			POKE(star5,32U);
-			if (starcol5 > 39)
-			{
-				star5 = 0x0400 + (rand_range(1U,23U) * 40U) + 39U;
-				stardead5 = rand_range(1U,5U);
-				starcol5 = 39;
-			}
-			else
-			{
-				star5 -= 1;
-				starcol5 -=1;
-				POKE(star5,99U);
-			}
-		}
-		else
-			stardead5 -= 1;
-		*/
-			
 		waitvsync();
 		
 	} while(1); //while (PEEK(197) != 63); //Run-stop pressed
-	
-	//free(stars);
 
-	//__asm__ ("jmp %w", 0xFCE2); // soft reset the Commodore 64
 }
