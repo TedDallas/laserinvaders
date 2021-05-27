@@ -6,7 +6,7 @@
 #define SPRITE_SIZE				64U
 
 #define PLAYER_SPRITE           0U
-#define SHOT_SPRITE		1U
+#define SHOT_SPRITE				1U
 #define DEATH_SPRITE            2U
 #define ENEMY1_SPRITE           3U
 #define ENEMY2_SPRITE           4U
@@ -155,9 +155,6 @@ static Entity enemy3 	= { /*Current_Animation*/NO_ANIM,  /*Animate_Direction*/1,
 static Entity enemy4 	= { /*Current_Animation*/NO_ANIM,  /*Animate_Direction*/1, /*Frame_Mod*/7, /*x*/0, /*y*/0, /*xvel*/0, /*yvel*/0, /*live*/0, /*ifetime*/0};
 static Entity* enemy;
 
-static unsigned char *screen = (unsigned char *) 0x0400;
-static unsigned char *screen_colors = (unsigned char *) 0xD800;
-
 static unsigned char enemy_sprite_number;
 static unsigned char frame_count;
 static unsigned char revive;
@@ -166,6 +163,7 @@ static unsigned int high_score = 0;
 static unsigned char lives = 3;
 static unsigned char next_wave_delay = 0;
 static unsigned char death_anim = DEATH_ANIM_EXPLODE;
+static unsigned char paused = 0;
 
 static unsigned int star1;
 static unsigned int star2;
@@ -186,7 +184,6 @@ static unsigned int stardead4 = 0;
 static unsigned int stardead5 = 0;
 
 static unsigned int laser_freq = 0;
-
 
 const unsigned char player_norm[] = {
 	0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
@@ -407,7 +404,7 @@ static void LoadSpriteFrame(const unsigned char *sprite_array, unsigned char ban
 
 static unsigned char RandomBrightColor()
 {
-	switch (rand_range(0,7))
+	switch (rand_range(0,6))
 	{
 		case 0 : return 1;  //WHITE
 		case 1 : return 3;  //CYAN
@@ -416,7 +413,6 @@ static unsigned char RandomBrightColor()
 		case 4 : return 8;  //ORANGE
 		case 5 : return 10; //PINK
 		case 6 : return 13; //LIGHT GREEN
-		case 7 : return 7;  //YELLOW AGAIN
 		default : return 1;
 	}
 	return 1;
@@ -556,9 +552,6 @@ void AnimateDeath(unsigned char Animation)
 				SetSpriteFrame(DEATH_SPRITE, SPRITE_BANK_DEATH3);
 			}
 		}
-
-
-
 	}
 }
 
@@ -725,13 +718,6 @@ void KillEnemy()
 							//SOUND: Explosion
 							memset((void *)(0xD400+7UL), 0, 7); // clear voice 1 data
 							
-							/*
-							POKE(0xD401+7UL, 25U); //FREQ
-							POKE(0xD405+7UL, 9U); //ATTACK/DECAY
-							POKE(0xD406+7UL, 15U); //SUSTAIN/RELEASE
-							POKE(0xD404+7UL, 129U); //WAVEFORM: Triangle=17 Sawtooth=33 Pulse=65 Noise=129 
-							*/
-							
 							CONST_POKE(0xD401+7UL, 25U); //FREQ
 							CONST_POKE(0xD405+7UL, 9U); //ATTACK/DECAY
 							CONST_POKE(0xD406+7UL, 15U); //SUSTAIN/RELEASE
@@ -840,16 +826,11 @@ static void Generate_Stars()
 {
 	unsigned char i;
 	unsigned int pos;
-	unsigned char c;
 	for (i = 0UL; i < 50; ++i)
 	{
 		pos = rand_range(40UL, 999UL);
-		c = RandomBrightColor();
-		screen[pos] = '.';
-		screen_colors[pos] = c;
-		
-		//stars[i] = pos;
-		//star_colors[i] = c;
+		POKE(0x0400+pos, '.');
+		POKE(0xD800+pos, RandomBrightColor());
 	}
 }
 
@@ -857,11 +838,9 @@ static void ClearAllText(unsigned char color)
 {
 	unsigned char x;
 	memset((void *)0x0400, 32U, 1000UL);
-	
 	memset((void *)0xD800, color, 40UL);
 	for (x = 1; x < 25; ++x)
 		memset((void *)(0xD800 + (x * 40)), RandomBrightColor(), 40UL);
-	//memset((void *)0xD800, color, 1000UL);
 }
 
 static void ClearTopLine(unsigned char color)
@@ -891,13 +870,10 @@ static void Init_Animated_Stars()
 
 static void GameOver()
 {
-	//unsigned char i;
 	unsigned char x = 15U;
 	unsigned char y = 10U;
 	unsigned int Title_Len = 9UL;
-	//unsigned char prev_color = CLR_BROWN;
 	unsigned char current_color = CLR_RED;
-	//unsigned char next_color = CLR_PINK;
 	
 	ClearAllEnemies();
 
@@ -991,8 +967,18 @@ static void SetEnemyColors(unsigned char animation)
 
 	c = rand_range(11,14);
 	SetSpriteColor(ENEMY4_SPRITE, c == 12 || c == 13 ? 11U : c);
+}
 
-
+static void Process_Enemies_and_Stuff()
+{
+	if (!enemy->alive)
+		SpawnEnemy();
+	else
+	{
+		MoveEnemy();
+		KillEnemy();
+		KillPlayer();
+	}
 }
 
 void main (void)
@@ -1066,120 +1052,142 @@ void main (void)
 
 	do 
 	{
-		++frame_count;
-		if (frame_count > 240)
-			frame_count = 1;
-
-		//Start ---- Handle next wave ---------------------------------------------------------------
-		if (frame_count % 60 == 0)
+		if (PEEK(197)==41U) //Pressed P to pause
+		{	
+			paused = !paused;
+			for (i = 0; i < 15; i++)
+				waitvsync();
+		}
+		
+		if (!paused)
 		{
-			++seconds;
-			
-			//Next wave wait cycle
-			if (seconds >= 15)
+			++frame_count;
+			if (frame_count > 240)
+				frame_count = 1;
+
+			//Start ---- Handle next wave ---------------------------------------------------------------
+			if (frame_count % 60 == 0)
 			{
-				next_enemy_anim = rand_range(ENEMY_ANIM_SPINNER, ENEMY_ANIM_VIRUS); 
-				//next_enemy_anim = next_enemy_anim + 1 > ENEMY_ANIM_VIRUS ? ENEMY_ANIM_SPINNER : next_enemy_anim + 1;
-				next_wave_delay = 180; //3 seconds delay to wait for enemies to leave screan
-				seconds = 0;
+				++seconds;
+				
+				//Next wave wait cycle
+				if (seconds >= 15)
+				{
+					next_enemy_anim = rand_range(ENEMY_ANIM_SPINNER, ENEMY_ANIM_VIRUS); 
+					//next_enemy_anim = next_enemy_anim + 1 > ENEMY_ANIM_VIRUS ? ENEMY_ANIM_SPINNER : next_enemy_anim + 1;
+					next_wave_delay = 180; //3 seconds delay to wait for enemies to leave screan
+					seconds = 0;
+				}
 			}
-		}
 
-		//Do next wave!!!
-		if (next_wave_delay == 1)
-		{
-			if (next_enemy_anim == ENEMY_ANIM_VIRUS /*|| next_enemy_anim == ENEMY_ANIM_POTATO */)
-				SetEnemyFrameMod(4);
-			else
-				SetEnemyFrameMod(7);
-			ClearAllEnemies();
-			SetEnemyColors(next_enemy_anim);
-			LoadEnemySpriteBanks(next_enemy_anim);
-		}
-		
-		if (next_wave_delay > 0)
-			next_wave_delay -= 1;
-		//End ---- Handle next wave -------------------------------------------------------------------
-
-		MovePlayer();
-		MoveShot();
-		
-		//play laser sound
-		if (laser_freq > 0)
-		{
-			memset((void *)0xD400, 0, 7); // clear voice 1 data
-			POKE(0xD401, laser_freq); //FREQ
-			CONST_POKE(0xD405, 4U); //ATTACK/DECAY
-			CONST_POKE(0xD406, 4U); //SUSTAIN/RELEASE
-			CONST_POKE(0xD404, 33U); //WAVEFORM: Triangle=17 Sawtooth=33 Pulse=65 Noise=129 
-			laser_freq -= 16;
-		}
-		
-		enemy_sprite_number = ENEMY1_SPRITE;
-		enemy = &enemy1;
-		if (enemy->alive == 0)
-			SpawnEnemy();
-		else
-		{
-			MoveEnemy();
-			KillEnemy();
-			KillPlayer();
-		}
-		
-		enemy_sprite_number = ENEMY2_SPRITE; 
-		enemy = &enemy2;
-		if (enemy->alive == 0)
-			SpawnEnemy();
-		else
-		{
-			MoveEnemy();
-			KillEnemy();
-			KillPlayer();
-		}
-
-		enemy_sprite_number = ENEMY3_SPRITE; 
-		enemy = &enemy3;
-		if (enemy->alive == 0)
-			SpawnEnemy();
-		else
-		{
-			MoveEnemy();
-			KillEnemy();
-			KillPlayer();
-		}
-		
-		enemy_sprite_number = ENEMY4_SPRITE; 
-		enemy = &enemy4;
-		if (enemy->alive == 0)
-			SpawnEnemy();
-		else
-		{
-			MoveEnemy();
-			KillEnemy();
-			KillPlayer();
-		}
-
-		Die();
-
-		//revive player or game over
-		if (!player.alive)
-		{
-			++revive;
-			if (revive >= 120)
+			//Do next wave!!!
+			if (next_wave_delay == 1)
 			{
-				revive = 0;
-				if (lives == 0)
-					GameOver();
+				if (next_enemy_anim == ENEMY_ANIM_VIRUS /*|| next_enemy_anim == ENEMY_ANIM_POTATO */)
+					SetEnemyFrameMod(4);
 				else
-					SpawnPlayer();
+					SetEnemyFrameMod(7);
+				ClearAllEnemies();
+				SetEnemyColors(next_enemy_anim);
+				LoadEnemySpriteBanks(next_enemy_anim);
 			}
-		}
+			
+			if (next_wave_delay > 0)
+				next_wave_delay -= 1;
+			//End ---- Handle next wave -------------------------------------------------------------------
 
-		AnimateStar(star1, stardead1, starcol1);
-		AnimateStar(star2, stardead2, starcol2);
-		AnimateStar(star3, stardead3, starcol3);
-		AnimateStar(star4, stardead4, starcol4);
-		AnimateStar(star5, stardead5, starcol5);
+			MovePlayer();
+			MoveShot();
+			
+			//play laser sound
+			if (laser_freq > 0)
+			{
+				memset((void *)0xD400, 0, 7); // clear voice 1 data
+				POKE(0xD401, laser_freq); //FREQ
+				CONST_POKE(0xD405, 4U); //ATTACK/DECAY
+				CONST_POKE(0xD406, 4U); //SUSTAIN/RELEASE
+				CONST_POKE(0xD404, 33U); //WAVEFORM: Triangle=17 Sawtooth=33 Pulse=65 Noise=129 
+				laser_freq -= 16;
+			}
+			
+			enemy_sprite_number = ENEMY1_SPRITE;
+			enemy = &enemy1;
+			Process_Enemies_and_Stuff();
+			/*
+			if (!enemy->alive)
+				SpawnEnemy();
+			else
+			{
+				MoveEnemy();
+				KillEnemy();
+				KillPlayer();
+			}
+			*/
+			
+			enemy_sprite_number = ENEMY2_SPRITE; 
+			enemy = &enemy2;
+			Process_Enemies_and_Stuff();
+			/*
+			if (!enemy->alive)
+				SpawnEnemy();
+			else
+			{
+				MoveEnemy();
+				KillEnemy();
+				KillPlayer();
+			}
+			*/
+
+			enemy_sprite_number = ENEMY3_SPRITE; 
+			enemy = &enemy3;
+			Process_Enemies_and_Stuff();
+			/*
+			if (!enemy->alive)
+				SpawnEnemy();
+			else
+			{
+				MoveEnemy();
+				KillEnemy();
+				KillPlayer();
+			}
+			*/
+			
+			enemy_sprite_number = ENEMY4_SPRITE; 
+			enemy = &enemy4;
+			Process_Enemies_and_Stuff();
+			/*
+			if (!enemy->alive)
+				SpawnEnemy();
+			else
+			{
+				MoveEnemy();
+				KillEnemy();
+				KillPlayer();
+			}
+			*/
+
+			Die();
+
+			//revive player or game over
+			if (!player.alive)
+			{
+				++revive;
+				if (revive >= 120)
+				{
+					revive = 0;
+					if (lives == 0)
+						GameOver();
+					else
+						SpawnPlayer();
+				}
+			}
+
+			AnimateStar(star1, stardead1, starcol1);
+			AnimateStar(star2, stardead2, starcol2);
+			AnimateStar(star3, stardead3, starcol3);
+			AnimateStar(star4, stardead4, starcol4);
+			AnimateStar(star5, stardead5, starcol5);
+		}
 
 		waitvsync();
 		
